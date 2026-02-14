@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Source, WeeklyDigest } from '../types';
 import { generateWeeklyDigest } from '../services/geminiService';
@@ -70,7 +69,7 @@ export const DigestView: React.FC<DigestViewProps> = ({ sources }) => {
                 <h3 className="text-sm font-bold font-mono text-void-200 uppercase tracking-widest">Recommended_Actions</h3>
               </div>
               <div className="space-y-4">
-                {digest.nextActions.map((action, i) => (
+                {(digest.nextActions || []).map((action, i) => (
                   <div key={i} className="flex items-start space-x-3 text-sm text-void-400 group">
                     <ArrowRight className="w-4 h-4 mt-1 text-void-700 group-hover:text-awakening transition-colors" />
                     <span>{action}</span>
@@ -83,7 +82,7 @@ export const DigestView: React.FC<DigestViewProps> = ({ sources }) => {
           <div className="bg-void-900/50 p-8 rounded-2xl border border-void-800 shadow-xl">
             <h3 className="text-sm font-bold font-mono text-void-200 uppercase tracking-widest mb-8">ENTITIES_DISCOVERED</h3>
             <div className="flex flex-wrap gap-3">
-              {digest.entitiesDiscovered.map(name => (
+              {(digest.entitiesDiscovered || []).map(name => (
                 <span key={name} className="px-4 py-2 bg-void-950 border border-void-800 text-void-300 text-[10px] font-mono rounded-full hover:border-awakening transition-colors cursor-default">
                   {name.toUpperCase()}
                 </span>

@@ -1,4 +1,3 @@
-
 export type Phase = 'collapse' | 'awakening' | 'integration' | 'synthesis';
 export type HereticalIntensity = 'mild' | 'moderate' | 'radical' | 'terminal';
 export type AporiaType = 'paradox' | 'ineffability' | 'recursion_limit';
@@ -9,35 +8,35 @@ export interface PentagonalWeights {
 }
 
 export interface CanonMetrics {
-  DQ: number; EE: number; AI: number; TRP: number;
+  DQ: number; // Despair Quotient
+  EE: number; // Entropic Energy
+  AI: number; // Axiomatic Integrity
+  TRP: number; // Transcendental Resonance
 }
 
 export interface AporiaMarker {
-  id: string; type: AporiaType; intensity: number; description: string;
+  id: string;
+  type: AporiaType;
+  intensity: number;
+  description: string;
+  quote?: string; // Text fragment triggering the marker
 }
 
 export interface Note {
-  id: string; title: string; content: string; phase: Phase;
-  hereticalIntensity: HereticalIntensity; recursiveDepth: number;
-  weights: PentagonalWeights; metrics: CanonMetrics; tags: string[];
-  aporiaMarkers: AporiaMarker[]; createdAt: string; updatedAt: string;
-  aiAnalysis?: string; isCanon: boolean;
-}
-
-export interface Source {
   id: string;
-  type: SourceType;
   title: string;
-  url?: string;
-  content?: string;
-  base64Data?: string;
-  mimeType?: string;
-  status: 'pending' | 'indexed' | 'failed';
-  entities: Entity[];
-  summaries: Summary[];
-  questions: Question[];
+  content: string; // HTML content for rich text
+  phase: Phase;
+  hereticalIntensity: HereticalIntensity;
+  recursiveDepth: number;
+  weights: PentagonalWeights;
+  metrics: CanonMetrics;
   tags: string[];
+  aporiaMarkers: AporiaMarker[];
   createdAt: string;
+  updatedAt: string;
+  aiAnalysis?: string;
+  isCanon: boolean;
 }
 
 export interface Entity {
@@ -62,6 +61,22 @@ export interface Question {
   aporiaLevel: number;
 }
 
+export interface Source {
+  id: string;
+  type: SourceType;
+  title: string;
+  url?: string;
+  content?: string;
+  base64Data?: string;
+  mimeType?: string;
+  status: 'pending' | 'indexed' | 'failed';
+  entities: Entity[];
+  summaries: Summary[];
+  questions: Question[];
+  tags: string[];
+  createdAt: string;
+}
+
 export interface WeeklyDigest {
   id: string;
   startDate: string;
@@ -72,11 +87,20 @@ export interface WeeklyDigest {
 }
 
 export interface ResearchQuery {
-  id: string; prompt: string; response: string; model: string;
-  timestamp: string; resonanceBoost: boolean;
+  id: string;
+  prompt: string;
+  response: string;
+  thoughts?: string[];
+  model: string;
+  timestamp: string;
+  resonanceBoost: boolean;
 }
 
 export interface ChatMessage {
-  id: string; role: 'user' | 'model' | 'system'; content: string;
-  timestamp: string; isStreaming?: boolean;
+  id: string;
+  role: 'user' | 'model' | 'system';
+  content: string;
+  thoughts?: string;
+  timestamp: string;
+  isStreaming?: boolean;
 }

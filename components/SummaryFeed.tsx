@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Source, Entity, Summary } from '../types';
 import { Quote, User, Brain, BookOpen } from 'lucide-react';
@@ -8,8 +7,8 @@ interface SummaryFeedProps {
 }
 
 export const SummaryFeed: React.FC<SummaryFeedProps> = ({ sources }) => {
-  const allSummaries = sources.flatMap(s => s.summaries).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  const allEntities = sources.flatMap(s => s.entities);
+  const allSummaries = sources.flatMap(s => s.summaries || []).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const allEntities = sources.flatMap(s => s.entities || []);
 
   return (
     <div className="space-y-12">

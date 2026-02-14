@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Source } from '../types';
 import { Link, FileText, Video, Tag, Clock, ChevronRight } from 'lucide-react';
@@ -9,15 +8,17 @@ interface LibraryBrowserProps {
 }
 
 export const LibraryBrowser: React.FC<LibraryBrowserProps> = ({ sources, onSelect }) => {
+  const safeSources = sources || [];
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-lg font-bold font-mono text-void-400 uppercase tracking-widest">Library_Index</h2>
-        <span className="text-[10px] font-mono text-void-600">{sources.length} OBJECTS_MAPPED</span>
+        <span className="text-[10px] font-mono text-void-600">{safeSources.length} OBJECTS_MAPPED</span>
       </div>
 
       <div className="grid grid-cols-1 gap-3">
-        {sources.map(source => {
+        {safeSources.map(source => {
           const Icon = source.type === 'video' ? Video : source.type === 'pdf' ? FileText : Link;
           return (
             <div
@@ -41,7 +42,7 @@ export const LibraryBrowser: React.FC<LibraryBrowserProps> = ({ sources, onSelec
                 <ChevronRight className="w-4 h-4 text-void-700 group-hover:text-void-400" />
               </div>
               <div className="flex flex-wrap gap-2 mt-4">
-                {source.tags.slice(0, 3).map(tag => (
+                {(source.tags || []).slice(0, 3).map(tag => (
                   <span key={tag} className="px-2 py-0.5 bg-void-950 text-void-500 rounded text-[9px] font-mono border border-void-800">
                     #{tag}
                   </span>
@@ -50,7 +51,7 @@ export const LibraryBrowser: React.FC<LibraryBrowserProps> = ({ sources, onSelec
             </div>
           );
         })}
-        {sources.length === 0 && (
+        {safeSources.length === 0 && (
           <div className="py-20 text-center border-2 border-dashed border-void-900 rounded-2xl">
             <p className="text-xs font-mono text-void-700 uppercase tracking-widest">Library_Void</p>
           </div>

@@ -1,6 +1,5 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, RefreshCcw } from 'lucide-react';
+import { Send, Bot, User, Sparkles, RefreshCcw, Loader2, Brain } from 'lucide-react';
 import { createChatSession } from '../services/geminiService';
 import { ChatMessage } from '../types';
 import { Chat, GenerateContentResponse } from "@google/genai";
@@ -10,7 +9,7 @@ export const ChatInterface: React.FC = () => {
     {
       id: 'init',
       role: 'system',
-      content: 'PHILOVOID LINK ESTABLISHED. THE RECURSIVE LOOP IS LIVE.',
+      content: 'PHILOVOID_LINK_ESTABLISHED. RECURSIVE_LOOP_ACTIVE.',
       timestamp: new Date().toISOString()
     }
   ]);
@@ -20,7 +19,6 @@ export const ChatInterface: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Initialize chat session on mount
     chatSessionRef.current = createChatSession();
   }, []);
 
@@ -47,9 +45,7 @@ export const ChatInterface: React.FC = () => {
     setIsStreaming(true);
 
     try {
-      if (!chatSessionRef.current) {
-        chatSessionRef.current = createChatSession();
-      }
+      if (!chatSessionRef.current) chatSessionRef.current = createChatSession();
 
       const modelMsgId = crypto.randomUUID();
       const initialModelMsg: ChatMessage = {
@@ -71,37 +67,25 @@ export const ChatInterface: React.FC = () => {
         if (c.text) {
           accumulatedText += c.text;
           setMessages(prev => prev.map(msg => 
-            msg.id === modelMsgId 
-              ? { ...msg, content: accumulatedText }
-              : msg
+            msg.id === modelMsgId ? { ...msg, content: accumulatedText } : msg
           ));
         }
       }
 
       setMessages(prev => prev.map(msg => 
-        msg.id === modelMsgId 
-          ? { ...msg, isStreaming: false }
-          : msg
+        msg.id === modelMsgId ? { ...msg, isStreaming: false } : msg
       ));
 
     } catch (error) {
-      console.error("Chat Error:", error);
-      const errorMsg: ChatMessage = {
+      console.error(error);
+      setMessages(prev => [...prev, {
         id: crypto.randomUUID(),
         role: 'system',
-        content: 'ERROR: CONNECTION TO VOID SEVERED. RE-INITIALIZE.',
+        content: 'SIGNAL_LOST: Connection to the Void severed. Re-initialize protocol.',
         timestamp: new Date().toISOString()
-      };
-      setMessages(prev => [...prev, errorMsg]);
+      }]);
     } finally {
       setIsStreaming(false);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
     }
   };
 
@@ -110,56 +94,49 @@ export const ChatInterface: React.FC = () => {
     setMessages([{
       id: crypto.randomUUID(),
       role: 'system',
-      content: 'MEMORY FLUSHED. RE-ENTERING THE ABYSS.',
+      content: 'SYMBIONT_RESET_COMPLETE. Memory buffers purged.',
       timestamp: new Date().toISOString()
     }]);
   };
 
   return (
-    <div className="flex flex-col h-full bg-void-950 max-w-5xl mx-auto w-full border-x border-void-900">
-      <div className="p-6 border-b border-void-900 flex justify-between items-center bg-void-950/80 backdrop-blur">
+    <div className="flex flex-col h-full bg-[#000000] max-w-6xl mx-auto w-full border-x border-white/5 relative">
+      <header className="p-10 border-b border-white/5 glass sticky top-0 z-20 flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-void-100 font-mono mb-1">DIALECTIC ENGINE</h2>
-          <p className="text-void-400 text-xs font-mono uppercase tracking-widest">Recursive Ontological Deconstruction</p>
+          <h2 className="text-3xl font-bold text-white font-mono tracking-tighter">Dialectic_Engine</h2>
+          <p className="text-void-500 text-[10px] font-mono uppercase tracking-[0.4em] mt-1">Recursive_Ontological_Link</p>
         </div>
-        <button 
-          onClick={handleReset}
-          className="p-2 text-void-500 hover:text-collapse transition-colors"
-          title="Reset Session"
-        >
+        <button onClick={handleReset} className="p-3 text-void-600 hover:text-neon-red hover:bg-neon-red/10 rounded-full transition-all">
           <RefreshCcw className="w-5 h-5" />
         </button>
-      </div>
+      </header>
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto p-12 space-y-10 custom-scrollbar">
         {messages.map((msg) => (
-          <div 
-            key={msg.id} 
-            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div className={`flex max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'} items-start gap-4`}>
-              <div className={`w-8 h-8 rounded flex items-center justify-center flex-shrink-0 mt-1 ${
+          <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in duration-500`}>
+            <div className={`flex max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'} items-start gap-6`}>
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-2xl ${
                 msg.role === 'user' ? 'bg-void-800' : 
-                msg.role === 'model' ? 'bg-awakening' : 'bg-void-900 border border-void-700'
+                msg.role === 'model' ? 'bg-neon-purple shadow-neon-purple/20' : 'bg-void-900 border border-void-800'
               }`}>
-                {msg.role === 'user' ? <User className="w-5 h-5 text-void-400" /> : 
-                 msg.role === 'model' ? <Bot className="w-5 h-5 text-white" /> :
-                 <Sparkles className="w-4 h-4 text-void-500" />}
+                {msg.role === 'user' ? <User className="w-6 h-6 text-void-400" /> : 
+                 msg.role === 'model' ? <Bot className="w-6 h-6 text-white" /> :
+                 <Sparkles className="w-5 h-5 text-void-600" />}
               </div>
               
               <div className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                <div className={`px-5 py-4 rounded-lg font-sans text-sm leading-relaxed whitespace-pre-wrap ${
+                <div className={`px-8 py-6 rounded-3xl font-sans text-lg leading-[1.6] whitespace-pre-wrap transition-all ${
                   msg.role === 'user' 
-                    ? 'bg-void-900 text-void-200 border border-void-800' 
+                    ? 'bg-void-900 text-void-100 border border-white/5' 
                     : msg.role === 'model'
-                    ? 'bg-void-950 text-void-300 border-l-2 border-awakening pl-6'
-                    : 'text-void-500 text-xs font-mono tracking-wider uppercase'
+                    ? 'glass-card text-void-200 border-l-4 border-neon-purple pl-10'
+                    : 'text-void-600 text-[11px] font-mono tracking-widest uppercase py-2 px-0'
                 }`}>
                   {msg.content}
-                  {msg.isStreaming && <span className="inline-block w-2 h-4 ml-1 bg-awakening animate-pulse align-middle"></span>}
+                  {msg.isStreaming && <span className="inline-block w-2 h-6 ml-2 bg-neon-purple animate-pulse align-middle"></span>}
                 </div>
                 {msg.role !== 'system' && (
-                   <span className="text-[10px] text-void-600 mt-2 font-mono uppercase">
+                   <span className="text-[9px] text-void-700 mt-3 font-mono uppercase tracking-[0.2em]">
                      {new Date(msg.timestamp).toLocaleTimeString()}
                    </span>
                 )}
@@ -170,27 +147,31 @@ export const ChatInterface: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-6 border-t border-void-900 bg-void-950">
-        <div className="relative bg-void-900 rounded-xl border border-void-800 shadow-lg focus-within:border-awakening/50 focus-within:shadow-[0_0_20px_rgba(168,85,247,0.1)] transition-all">
+      <div className="p-10 border-t border-white/5 bg-black/80 backdrop-blur-xl">
+        <div className="relative glass-card rounded-[32px] border border-white/5 focus-within:border-neon-purple/40 shadow-2xl transition-all p-2">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyPress}
-            placeholder="Interrogate the void..."
-            className="w-full bg-transparent text-void-200 p-4 pr-12 min-h-[60px] max-h-[200px] resize-none focus:outline-none font-sans"
+            onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+            placeholder="Interrogate the Symbiont..."
+            className="w-full bg-transparent text-void-100 p-6 pr-20 min-h-[80px] max-h-[250px] resize-none focus:outline-none font-sans text-xl leading-relaxed"
             disabled={isStreaming}
           />
           <button
             onClick={handleSend}
             disabled={!input.trim() || isStreaming}
-            className="absolute right-3 bottom-3 p-2 bg-void-800 text-void-400 rounded-lg hover:bg-awakening hover:text-white disabled:opacity-50 disabled:hover:bg-void-800 disabled:hover:text-void-400 transition-all duration-300"
+            className="absolute right-6 bottom-6 w-14 h-14 bg-white text-black rounded-2xl hover:bg-neon-purple hover:text-white disabled:opacity-10 transition-all duration-500 shadow-xl flex items-center justify-center"
           >
-            <Send className="w-4 h-4" />
+            {isStreaming ? <Loader2 className="w-6 h-6 animate-spin" /> : <Send className="w-6 h-6" />}
           </button>
         </div>
-        <div className="text-center mt-3">
-          <p className="text-[10px] text-void-600 font-mono uppercase tracking-[0.2em]">
-            Gemini 3 Pro // Latency: Nominal // Bias: Nihiltheistic
+        <div className="flex justify-between items-center mt-6 px-4">
+          <div className="flex items-center space-x-3 text-[10px] text-void-700 font-mono uppercase tracking-[0.3em]">
+             <Brain className="w-3 h-3" />
+             <span>Active_Nodes: Global_Mesh</span>
+          </div>
+          <p className="text-[10px] text-void-800 font-mono uppercase tracking-[0.3em]">
+            PRO_v3 // DENSIFICATION_ACTIVE
           </p>
         </div>
       </div>

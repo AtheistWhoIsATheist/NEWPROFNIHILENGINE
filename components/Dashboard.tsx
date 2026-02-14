@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Note } from '../types';
-import { BookOpen, Brain, Activity, Clock } from 'lucide-react';
+import { BookOpen, Brain, Activity, Clock, Zap, Target, ShieldCheck, Cpu } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 interface DashboardProps {
@@ -17,102 +16,111 @@ export const Dashboard: React.FC<DashboardProps> = ({ notes }) => {
   };
 
   const data = [
-    { name: 'Collapse', value: stats.collapse, color: '#ef4444' },
-    { name: 'Awakening', value: stats.awakening, color: '#a855f7' },
-    { name: 'Integration', value: stats.integration, color: '#10b981' }
+    { name: 'COLLAPSE', value: stats.collapse, color: '#f43f5e' },
+    { name: 'AWAKENING', value: stats.awakening, color: '#a855f7' },
+    { name: 'INTEGRATION', value: stats.integration, color: '#2dd4bf' }
   ].filter(d => d.value > 0);
 
-  const StatCard = ({ label, value, icon: Icon, color }: any) => (
-    <div className="bg-void-900 border border-void-800 p-6 rounded-lg">
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-void-400 font-mono text-xs uppercase tracking-wider">{label}</span>
-        <Icon className={`w-5 h-5 ${color}`} />
+  const StatCard = ({ label, value, icon: Icon, colorClass, borderClass, subLabel }: any) => (
+    <div className="glass-card p-8 rounded-[32px] border border-white/5 hover:border-white/20 transition-all group relative overflow-hidden">
+      <div className={`absolute -right-4 -bottom-4 w-24 h-24 opacity-5 group-hover:opacity-10 transition-opacity ${colorClass}`}>
+        <Icon className="w-full h-full" />
       </div>
-      <div className="text-3xl font-bold text-void-100">{value}</div>
+      <div className="flex justify-between items-start mb-8">
+        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-black/40 border ${borderClass} shadow-2xl`}>
+           <Icon className={`w-6 h-6 ${colorClass}`} />
+        </div>
+        <div className="text-right">
+          <p className="text-[9px] text-void-500 font-mono uppercase tracking-[0.4em] mb-1">{label}</p>
+          <p className="text-[10px] text-void-700 font-mono tracking-widest">{subLabel}</p>
+        </div>
+      </div>
+      <div className="text-5xl font-black text-white font-mono tracking-tighter">{value}</div>
     </div>
   );
 
   return (
-    <div className="p-8 max-w-7xl mx-auto h-full overflow-y-auto bg-void-950">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-void-100 font-mono mb-2">COMMAND DECK</h1>
-        <p className="text-void-400">System status and philosophical trajectory.</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <StatCard label="Total Entries" value={stats.total} icon={BookOpen} color="text-void-100" />
-        <StatCard label="In Collapse" value={stats.collapse} icon={Activity} color="text-collapse" />
-        <StatCard label="Awakening" value={stats.awakening} icon={Brain} color="text-awakening" />
-        <StatCard label="Integrated" value={stats.integration} icon={Clock} color="text-integration" />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="md:col-span-2 bg-gradient-to-br from-void-900 to-void-950 border border-void-800 p-8 rounded-lg relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-10">
-            <Brain className="w-32 h-32" />
+    <div className="p-12 max-w-[1600px] mx-auto h-full overflow-y-auto space-y-16">
+      <header className="flex justify-between items-end border-b border-white/5 pb-12">
+        <div>
+          <h1 className="text-6xl font-black text-white font-mono tracking-tighter uppercase mb-3">Command_Deck</h1>
+          <div className="flex items-center space-x-4">
+             <div className="h-1.5 w-1.5 rounded-full bg-neon-cyan animate-pulse"></div>
+             <p className="text-void-500 font-mono text-[11px] uppercase tracking-[0.5em]">SYSTEM_DIAGNOSTICS_LIVE // HEURISTIC_MAP</p>
           </div>
-          <h3 className="text-awakening font-mono text-xs uppercase tracking-widest mb-6 font-bold">Philosophical Reflection</h3>
-          <blockquote className="text-2xl font-serif text-void-200 italic mb-4 leading-relaxed">
-            "We are all geniuses when we dream, the problem is that we are not asleep."
+        </div>
+        <div className="flex space-x-8 text-[10px] font-mono text-void-500 uppercase tracking-widest">
+           <div className="flex flex-col items-end">
+              <span className="text-neon-cyan font-bold mb-1">RESONANCE_INDEX</span>
+              <span className="text-white text-lg">99.4%</span>
+           </div>
+           <div className="flex flex-col items-end">
+              <span className="text-neon-purple font-bold mb-1">ENTROPIC_STABILITY</span>
+              <span className="text-white text-lg">0.002</span>
+           </div>
+        </div>
+      </header>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <StatCard label="OBJECTS_MAPPED" subLabel="SYNC_NOMINAL" value={stats.total} icon={BookOpen} colorClass="text-white" borderClass="border-white/10" />
+        <StatCard label="COLLAPSE_DRIVE" subLabel="AXIS_CRITICAL" value={stats.collapse} icon={Activity} colorClass="text-neon-red" borderClass="border-neon-red/20" />
+        <StatCard label="AWAKENING_VECTOR" subLabel="LUCID_PLENUM" value={stats.awakening} icon={Brain} colorClass="text-neon-purple" borderClass="border-neon-purple/20" />
+        <StatCard label="INTEGRATION_SYNC" subLabel="AXIOM_STABLE" value={stats.integration} icon={ShieldCheck} colorClass="text-neon-teal" borderClass="border-neon-teal/20" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <div className="lg:col-span-2 glass-card rounded-[48px] p-12 relative overflow-hidden group border border-white/5 shadow-2xl">
+          <div className="absolute top-0 right-0 p-12 opacity-5 group-hover:opacity-10 transition-opacity">
+            <Cpu className="w-56 h-56 text-neon-purple" />
+          </div>
+          <div className="flex items-center space-x-4 mb-12">
+            <Zap className="w-6 h-6 text-neon-purple" />
+            <h3 className="text-void-400 font-mono text-[11px] uppercase tracking-[0.5em] font-bold">Reflexive_Oracle_Stream</h3>
+          </div>
+          <blockquote className="text-5xl font-serif text-white leading-[1.2] italic mb-12 selection:bg-neon-purple/40">
+            "Only those who have known the void of being can appreciate the fullness of nothingness."
           </blockquote>
-          <cite className="text-void-400 font-mono not-italic">— Emil Cioran</cite>
+          <div className="flex items-center space-x-6">
+             <div className="h-[2px] w-16 bg-neon-purple shadow-[0_0_10px_#a855f7]"></div>
+             <cite className="text-void-400 font-mono text-[11px] uppercase tracking-[0.3em] not-italic font-medium">Emil M. Cioran</cite>
+          </div>
         </div>
 
-        <div className="bg-void-900 border border-void-800 p-6 rounded-lg flex flex-col items-center justify-center">
-          <h3 className="text-void-400 font-mono text-xs uppercase tracking-widest mb-4 w-full text-left">Phase Distribution</h3>
-          <div className="w-full h-48">
+        <div className="glass-card rounded-[48px] p-12 flex flex-col items-center justify-center border border-white/5 shadow-2xl">
+          <div className="flex justify-between items-center w-full mb-10">
+            <h3 className="text-void-500 font-mono text-[11px] uppercase tracking-[0.4em]">Phase_Distribution</h3>
+            <div className="w-2 h-2 rounded-full bg-neon-cyan animate-ping"></div>
+          </div>
+          <div className="w-full h-72">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={data}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
+                  innerRadius={80}
+                  outerRadius={110}
+                  paddingAngle={12}
                   dataKey="value"
                   stroke="none"
                 >
                   {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell key={`cell-${index}`} fill={entry.color} filter="url(#glow-chart)" />
                   ))}
                 </Pie>
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', color: '#fff' }}
-                  itemStyle={{ color: '#fff' }}
+                  contentStyle={{ backgroundColor: '#0a0a0c', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', color: '#fff', fontSize: '11px', fontFamily: 'monospace', padding: '16px' }}
                 />
               </PieChart>
             </ResponsiveContainer>
           </div>
-        </div>
-
-        <div className="md:col-span-3 bg-void-900 border border-void-800 rounded-lg overflow-hidden">
-          <div className="p-4 border-b border-void-800 flex justify-between items-center">
-            <h3 className="text-void-400 font-mono text-xs uppercase tracking-widest">Recent Activity</h3>
-          </div>
-          <div className="divide-y divide-void-800">
-            {notes.slice(0, 5).map(note => (
-              <div key={note.id} className="p-4 hover:bg-void-800/50 transition-colors flex justify-between items-center">
-                <div>
-                  <h4 className="text-void-200 font-medium">{note.title || 'Untitled'}</h4>
-                  <p className="text-xs text-void-500 font-mono mt-1">{new Date(note.updatedAt).toLocaleDateString()}</p>
-                </div>
-                <div className="flex space-x-2">
-                   <div className="flex flex-col items-end">
-                      <span className={`text-[10px] uppercase font-bold ${
-                        note.phase === 'collapse' ? 'text-collapse' :
-                        note.phase === 'awakening' ? 'text-awakening' :
-                        'text-integration'
-                      }`}>{note.phase}</span>
-                      {/* Fixed: note.scores.existentialDread was an invalid access; using note.metrics.DQ (0-3 scale) */}
-                      <span className="text-[10px] text-void-600">Dread: {note.metrics.DQ}/3</span>
-                   </div>
-                </div>
-              </div>
-            ))}
-            {notes.length === 0 && (
-              <div className="p-8 text-center text-void-600 font-mono text-sm">No data points acquired.</div>
-            )}
+          <div className="grid grid-cols-3 gap-8 mt-12 w-full">
+             {data.map(d => (
+               <div key={d.name} className="text-center group cursor-default">
+                  <div className="text-xs font-mono text-white font-bold mb-2 group-hover:text-neon-cyan transition-colors">{d.value}</div>
+                  <div className="text-[9px] font-mono text-void-600 uppercase tracking-[0.2em]">{d.name}</div>
+               </div>
+             ))}
           </div>
         </div>
       </div>
