@@ -11,18 +11,13 @@ export const KnowledgeIngestion: React.FC<KnowledgeIngestionProps> = ({ onSource
   const [type, setType] = useState<SourceType>('link');
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
-  const [fileData, setFileData] = useState<{ base64: string; mimeType: string } | null>(null);
+  const [file, setFile] = useState<File | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const base64 = (reader.result as string).split(',')[1];
-        setFileData({ base64, mimeType: file.type });
-        setInputValue(file.name);
-      };
-      reader.readAsDataURL(file);
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      setInputValue(selectedFile.name);
     }
   };
 
@@ -38,12 +33,10 @@ export const KnowledgeIngestion: React.FC<KnowledgeIngestionProps> = ({ onSource
         title: inputValue,
         url: type === 'link' || type === 'video' ? inputValue : undefined,
         content: type === 'text' ? inputValue : undefined,
-        base64Data: fileData?.base64,
-        mimeType: fileData?.mimeType,
         status: 'pending'
       };
 
-      const result = await ingestSource(partialSource);
+      const result = await ingestSource(partialSource, file || undefined);
       
       const fullSource: Source = {
         ...partialSource,
@@ -59,7 +52,7 @@ export const KnowledgeIngestion: React.FC<KnowledgeIngestionProps> = ({ onSource
 
       onSourceAdded(fullSource);
       setInputValue('');
-      setFileData(null);
+      setFile(null);
     } catch (err) {
       console.error(err);
       // Fallback for visual continuity if API fails
@@ -101,7 +94,7 @@ export const KnowledgeIngestion: React.FC<KnowledgeIngestionProps> = ({ onSource
         ].map(t => (
           <button
             key={t.id}
-            onClick={() => { setType(t.id as SourceType); setInputValue(''); setFileData(null); }}
+            onClick={() => { setType(t.id as SourceType); setInputValue(''); setFile(null); }}
             className={`flex flex-col items-center justify-center space-y-2 py-4 rounded-2xl font-mono text-[9px] transition-all border ${
               type === t.id ? 'bg-white/10 border-neon-cyan text-white shadow-neon-cyan/20' : 'bg-transparent border-white/5 text-void-500 hover:text-void-300 hover:border-white/20'
             }`}

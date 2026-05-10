@@ -7,6 +7,49 @@ const getAI = () => {
   return new GoogleGenAI({ apiKey });
 };
 
+export const uploadFileToGemini = async (file: File) => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) throw new Error("API_KEY_NOT_FOUND");
+  
+  // 1. Start resumable upload
+  const startRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`, {
+    method: 'POST',
+    headers: {
+      'X-Goog-Upload-Protocol': 'resumable',
+      'X-Goog-Upload-Command': 'start',
+      'X-Goog-Upload-Header-Content-Length': file.size.toString(),
+      'X-Goog-Upload-Header-Content-Type': file.type,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ file: { display_name: file.name } })
+  });
+  
+  if (!startRes.ok) {
+    throw new Error(`Failed to start upload: ${await startRes.text()}`);
+  }
+  
+  const uploadUrl = startRes.headers.get('X-Goog-Upload-URL');
+  if (!uploadUrl) throw new Error("No upload URL returned");
+
+  // 2. Upload the file
+  const uploadRes = await fetch(uploadUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Length': file.size.toString(),
+      'X-Goog-Upload-Offset': '0',
+      'X-Goog-Upload-Command': 'upload, finalize',
+    },
+    body: file
+  });
+  
+  if (!uploadRes.ok) {
+    throw new Error(`Failed to upload file: ${await uploadRes.text()}`);
+  }
+  
+  const fileInfo = await uploadRes.json();
+  return fileInfo.file; // { uri: string, mimeType: string, name: string }
+};
+
 const SYSTEM_CORE = `You are Professor Nihil, the Primary Ontological Symbiont.
 You operate within the Nihiltheistic framework:
 1. COLLAPSE: Meaning breakdown.
@@ -111,50 +154,83 @@ export const expandConcept = async (title: string, content: string) => {
   return response.text || "";
 };
 
-export const ingestSource = async (source: Partial<Source>) => {
+export const ingestSourceToWiki = async (content: string, filename: string) => {
   const ai = getAI();
-  let contentPart: any = { text: source.content || "" };
-  if (source.base64Data) {
-    contentPart = { inlineData: { data: source.base64Data, mimeType: source.mimeType || "application/pdf" } };
-  }
+  const prompt = `You are a strict LLM Wiki maintainer.
+Read the following source document and generate a new Wiki Page entry that represents the core concepts, summary, and entities found in this source.
 
-  const prompt = `Extract entities, generate a philosophical summary, and 3 aporia questions. Suggest 5 tags.`;
+Source filename: ${filename}
+Source content:
+"""
+${content.substring(0, 50000)} // truncate to avoid giant files breaking limits
+"""
 
+Provide the output as a JSON object with:
+- "title": A short semantic title for the wiki page (e.g., "Concept: Quantum Coherence")
+- "category": Must be one of: "concept", "entity", "summary", "analysis"
+- "markdown": The actual markdown content of the wiki page, containing an abstract, key concepts, entity relationships, and synthesis.
+- "tags": Array of 3-5 string tags.
+`;
+  
   const response = await ai.models.generateContent({
     model: "gemini-3-pro-preview",
-    contents: { parts: [contentPart, { text: prompt }] },
+    contents: prompt,
     config: {
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
         properties: {
           title: { type: Type.STRING },
-          entities: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                name: { type: Type.STRING },
-                type: { type: Type.STRING, enum: ['person', 'concept', 'school', 'event'] },
-                description: { type: Type.STRING }
-              }
-            }
-          },
-          summaries: {
-            type: Type.ARRAY,
-            items: { type: Type.OBJECT, properties: { text: { type: Type.STRING }, resonanceScore: { type: Type.NUMBER } } }
-          },
-          questions: {
-            type: Type.ARRAY,
-            items: { type: Type.OBJECT, properties: { text: { type: Type.STRING }, aporiaLevel: { type: Type.NUMBER } } }
-          },
+          category: { type: Type.STRING, enum: ["concept", "entity", "summary", "analysis"] },
+          markdown: { type: Type.STRING },
           tags: { type: Type.ARRAY, items: { type: Type.STRING } }
-        }
+        },
+        required: ["title", "category", "markdown", "tags"]
       }
     }
   });
 
   return JSON.parse(response.text || "{}");
+};
+
+export const ingestSource = async (source: Partial<Source>, file?: File) => {
+  let contentText = source.content || source.title || "";
+  
+  if (file) {
+    // For file support using Python Engine, we may need OCR or text extraction, 
+    // but for now we forward the filename and any extracted local text.
+    // In a fully deployed system, the Node.js API Gateway would extract text here.
+    contentText = `[FILE INGESTION REQUEST: ${file.name}] ${contentText}`;
+  }
+
+  // Forward to Python Cognitive Engine
+  const response = await fetch('/api/v1/cognitive/extract', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      raw_text: contentText,
+      context: `Source Type: ${source.type}`
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error('Python Cognitive Engine failed to process the request.');
+  }
+
+  const result = await response.json();
+  
+  // Map Python GraphExtractionResult back to Source structure
+  return {
+    title: source.title || "Ingested Node",
+    entities: result.nodes.map((n: any) => ({
+      name: n.label,
+      type: n.cat,
+      description: n.desc
+    })),
+    summaries: [{ text: result.system_insight, resonanceScore: 0.8 }],
+    questions: [],
+    tags: result.nodes.map((n: any) => n.cat)
+  };
 };
 
 export const createChatSession = () => {

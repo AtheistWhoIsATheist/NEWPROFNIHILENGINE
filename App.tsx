@@ -4,6 +4,7 @@ import { Dashboard } from './components/Dashboard';
 import { ResearchHub } from './components/ResearchHub';
 import { NoteEditor } from './components/NoteEditor';
 import { ConceptMap } from './components/ConceptMap';
+import { CosmicGraph } from './components/CosmicGraph';
 import { AnalysisWorkspace } from './components/AnalysisWorkspace';
 import { PhilosophicalFramework } from './components/PhilosophicalFramework';
 import { ChatInterface } from './components/ChatInterface';
@@ -12,6 +13,8 @@ import { LibraryBrowser } from './components/LibraryBrowser';
 import { SummaryFeed } from './components/SummaryFeed';
 import { DigestView } from './components/DigestView';
 import { RenMode } from './components/RenMode';
+import { VaultView } from './components/VaultView';
+import { WikiBrowser } from './components/WikiBrowser';
 import { Note, Source } from './types';
 
 const initialNotes: Note[] = [
@@ -38,6 +41,7 @@ const App: React.FC = () => {
   const [notes, setNotes] = useState<Note[]>(initialNotes);
   const [sources, setSources] = useState<Source[]>([]);
   const [selectedSource, setSelectedSource] = useState<Source | null>(null);
+  const [synthesisModal, setSynthesisModal] = useState<{isOpen: boolean, isLoading: boolean, content?: string}>({isOpen: false, isLoading: false});
 
   const handleSourceAdded = (source: Source) => {
     setSources(prev => [source, ...prev]);
@@ -47,12 +51,32 @@ const App: React.FC = () => {
     setNotes(prev => [note, ...prev]);
   };
 
+  const handleDeepSynthesize = async (nodeId: string) => {
+    setSynthesisModal({ isOpen: true, isLoading: true });
+    try {
+      const response = await fetch('/api/v1/cognitive/synthesize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          node_id: nodeId,
+          graph_context: { notes: notes.map(n => ({ id: n.id, title: n.title })) }
+        })
+      });
+      const data = await response.json();
+      setSynthesisModal({ isOpen: true, isLoading: false, content: data.synthesis });
+    } catch (err) {
+      setSynthesisModal({ isOpen: true, isLoading: false, content: "Synthesis Failed. The void returns silence." });
+    }
+  };
+
   const renderView = () => {
     switch (currentView) {
       case 'dashboard': return <Dashboard notes={notes} />;
       case 'ren_mode': return <RenMode />;
       case 'chat': return <ChatInterface />;
       case 'research': return <ResearchHub />;
+      case 'vault': return <div className="p-12 h-full overflow-y-auto max-w-7xl mx-auto"><VaultView /></div>;
+      case 'wiki': return <div className="p-8 h-full overflow-hidden max-w-7xl mx-auto w-full"><WikiBrowser /></div>;
       case 'library': return (
         <div className="p-12 h-full overflow-y-auto grid grid-cols-1 xl:grid-cols-3 gap-12">
           <div className="xl:col-span-1 space-y-12">
@@ -99,7 +123,7 @@ const App: React.FC = () => {
       case 'summaries': return <div className="p-12 h-full overflow-y-auto max-w-6xl mx-auto"><SummaryFeed sources={sources} /></div>;
       case 'digest': return <DigestView sources={sources} />;
       case 'notes': return <NoteEditor notes={notes} setNotes={setNotes} />;
-      case 'concepts': return <ConceptMap notes={notes} onNoteCreate={addNote} />;
+      case 'concepts': return <CosmicGraph notes={notes} onSynthesize={handleDeepSynthesize} />;
       case 'analysis': return <AnalysisWorkspace notes={notes} />;
       case 'framework': return <PhilosophicalFramework />;
       default: return <Dashboard notes={notes} />;
@@ -113,6 +137,33 @@ const App: React.FC = () => {
       <main className="flex-1 h-full overflow-hidden relative">
         {renderView()}
       </main>
+
+      {/* Synthesis Modal Overlay */}
+      {synthesisModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+          <div className="glass-card w-full max-w-2xl rounded-3xl border border-neon-cyan/30 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/40">
+              <h3 className="text-xl font-serif text-neon-cyan">Deep Synthesis</h3>
+              <button 
+                onClick={() => setSynthesisModal({isOpen: false, isLoading: false})}
+                className="text-void-400 hover:text-white"
+              >
+                Close
+              </button>
+            </div>
+            <div className="p-8 overflow-y-auto font-serif text-void-100 text-lg leading-relaxed">
+              {synthesisModal.isLoading ? (
+                <div className="flex flex-col items-center justify-center py-12 opacity-70 animate-pulse">
+                  <div className="w-12 h-12 border-2 border-neon-cyan/50 rounded-full border-t-neon-cyan animate-spin mb-6"></div>
+                  <p className="font-mono text-sm uppercase tracking-[0.2em] text-neon-cyan">Synthesizing Void Logic...</p>
+                </div>
+              ) : (
+                <div dangerouslySetInnerHTML={{ __html: synthesisModal.content || '' }} />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

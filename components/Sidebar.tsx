@@ -11,7 +11,9 @@ import {
   Package,
   FileText,
   Calendar,
-  Flame
+  Flame,
+  Database,
+  Code2
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -25,7 +27,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) =
     { id: 'ren_mode', icon: Flame, label: 'REN_MODE' },
     { id: 'chat', icon: MessageSquare, label: 'DIALECTIC_ENGINE' },
     { id: 'research', icon: Zap, label: 'DENSIFICATION' },
-    { id: 'library', icon: Package, label: 'KNOWLEDGE_VAULT' },
+    { id: 'vault', icon: Database, label: 'SOURCE_VAULT' },
+    { id: 'wiki', icon: Code2, label: 'WIKI_LAYER' },
     { id: 'summaries', icon: FileText, label: 'SUMMARIES' },
     { id: 'digest', icon: Calendar, label: 'TEMPORAL_DIGEST' },
     { id: 'notes', icon: FlaskConical, label: 'LABORATORY' },
